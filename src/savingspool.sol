@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract savingsPool {
@@ -12,8 +11,7 @@ contract savingsPool {
         admin = msg.sender;
     }
 
-
-    modifier onlyOwner(){
+    modifier onlyOwner() {
         require(msg.sender == admin, "Not owner");
         _;
     }
@@ -49,47 +47,46 @@ contract savingsPool {
         emit planCreated(msg.sender, userSpecificId, _goalAmount);
     }
 
-   function deposit(uint256 _planId, uint256 _amount) external {
-    require(_planId > 0, "Invalid Plan ID");
-    require(_amount > 0, "Amount must be greater than zero");
-    require(_planId <= userPlanCount[msg.sender], "Plan ID does not exist for user");
+    function deposit(uint256 _planId, uint256 _amount) external {
+        require(_planId > 0, "Invalid Plan ID");
+        require(_amount > 0, "Amount must be greater than zero");
+        require(_planId <= userPlanCount[msg.sender], "Plan ID does not exist for user");
 
-    // Check approval and pull tokens
-    require(token.allowance(msg.sender, address(this)) >= _amount, "Insufficient allowance for transfer");
-    require(token.transferFrom(msg.sender, address(this), _amount), "Token transfer failed");
+        // Check approval and pull tokens
+        require(token.allowance(msg.sender, address(this)) >= _amount, "Insufficient allowance for transfer");
+        require(token.transferFrom(msg.sender, address(this), _amount), "Token transfer failed");
 
-    // Update plan balance
-    SavingsPlan storage plan = userPlans[msg.sender][_planId];
-    plan.balance += _amount;
+        // Update plan balance
+        SavingsPlan storage plan = userPlans[msg.sender][_planId];
+        plan.balance += _amount;
 
-    emit DepositMade(msg.sender, _planId, _amount);
-}
-
-function withdraw(uint256 _planId) external {
-    SavingsPlan storage plan = userPlans[msg.sender][_planId];
-    require(plan.balance > 0, "insufficient");
-    require(!plan.withdrawn, "already withdrawn");
-    
-    bool isEarly = plan.balance < plan.goalAmount;
-    uint256 amountToTransfer;
-    
-    if (isEarly) {
-        uint256 fee = (plan.balance * feePercent) / 100;
-        amountToTransfer = plan.balance - fee;
-    } else {
-        amountToTransfer = plan.balance;
+        emit DepositMade(msg.sender, _planId, _amount);
     }
-    
-    plan.withdrawn = true;
-    plan.balance = 0;
-    
-    require(token.transfer(msg.sender, amountToTransfer), "transfer failed");
-    
-    emit withdrawn(msg.sender, _planId, amountToTransfer, isEarly);
-}
 
-function updateFeePercent (uint256 _newFee) external onlyOwner {
-    feePercent = _newFee;
-}
+    function withdraw(uint256 _planId) external {
+        SavingsPlan storage plan = userPlans[msg.sender][_planId];
+        require(plan.balance > 0, "insufficient");
+        require(!plan.withdrawn, "already withdrawn");
 
+        bool isEarly = plan.balance < plan.goalAmount;
+        uint256 amountToTransfer;
+
+        if (isEarly) {
+            uint256 fee = (plan.balance * feePercent) / 100;
+            amountToTransfer = plan.balance - fee;
+        } else {
+            amountToTransfer = plan.balance;
+        }
+
+        plan.withdrawn = true;
+        plan.balance = 0;
+
+        require(token.transfer(msg.sender, amountToTransfer), "transfer failed");
+
+        emit withdrawn(msg.sender, _planId, amountToTransfer, isEarly);
+    }
+
+    function updateFeePercent(uint256 _newFee) external onlyOwner {
+        feePercent = _newFee;
+    }
 }

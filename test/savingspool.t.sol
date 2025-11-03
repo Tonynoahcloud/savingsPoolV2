@@ -14,13 +14,11 @@ contract savingsPoolTest is Test{
     function setUp() public {
         savingspool = new savingsPool(address(this));
         token = new anthonyToken();
-        savingspool = new savingsPool(address(token));
-        token.transfer(user, 500);
     }
 
-    function testcreatePlan() public {
+    function testcreatePlan_success() public {
        vm.prank(user);
-       savingspool.createPlan(10000000);
+       savingspool.createPlan(1000);
        assertEq(savingspool.userPlanCount(user), 1);
        (, , , bool withdrawn) = savingspool.userPlans(user, 1);
        assertFalse(withdrawn, 'no withdrawn yet');
@@ -28,8 +26,31 @@ contract savingsPoolTest is Test{
        assertEq(balance, 0);
     }
 
-    function testdeposit() public {
-       
+    function test_Revert_createPlan_whengoalamountiszero() public {
+        vm.prank(user);
+        vm.expectRevert();
+        savingspool.createPlan(0);
+        
+    }
+
+    function test_Revert_createPlan_checkwithdrawiszero() public {
+        vm.prank(user);
+        savingspool.createPlan(1000);
+        (, , , bool withdrawn) = savingspool.userPlans(user, 1);
+        assertFalse(withdrawn, 'no withdrawal yet');
+    }
+   
+    function test_Revert_createPlan_balanceiszero() public {
+        vm.prank(user);
+        (, , uint256 balance, ) = savingspool.userPlans(user, 1);
+        assertEq(balance, 0);
+    }
+
+    function test_Emit_createPlan() public {
+        vm.prank(user);
+        vm.expectEmit(true, true, false, true);
+        emit savingsPool.planCreated(user, 1, 200);
+        savingspool.createPlan(200);
     }
 
 }
