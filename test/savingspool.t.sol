@@ -33,8 +33,45 @@ contract savingsPoolTest is Test {
 
     function test_Emit_createPlan() public {
         vm.prank(user);
-        vm.expectEmit(true, true, false, true);
+        vm.expectEmit(true, true, true, true);
         emit savingsPool.planCreated(user, 1, 200);
         savingspool.createPlan(200);
     }
+
+    function test_Revert_deposit_noId() public {
+        vm.startPrank(user);
+        
+        savingspool.createPlan(1000);
+        vm.expectRevert("Invalid Plan ID");
+        savingspool.deposit(0, 500);
+        vm.stopPrank();
+        
+    }
+
+    function test_Revert_deposit_amountlessthanzero() public {
+        vm.startPrank(user);
+        savingspool.createPlan(500);
+        vm.expectRevert("Amount must be greater than zero");
+        savingspool.deposit(1, 0);
+        vm.stopPrank();
+    }
+
+    function test_Revert_deposit_noplanidforuser() public {
+        vm.startPrank(user);
+        savingspool.createPlan(300);
+        vm.expectRevert("Plan ID does not exist for user");
+        savingspool.deposit(2, 200);
+    }
+
+    function test_Emit_deposit() public {
+        vm.startPrank(user);
+        savingspool.createPlan(3000);
+        token.approve(address(savingspool), 5000);
+        vm.expectEmit(true, true, false, true, address(savingspool));
+        emit savingsPool.DepositMade(user, 1, 3000);
+        savingspool.deposit(1, 3000);
+        vm.stopPrank();
+      
+    }
+   
 }

@@ -7,4 +7,5 @@ contract anthonyToken is ERC20 {
     constructor() ERC20("anthonyToken", "ATN") {
         _mint(msg.sender, 50 * 10 ** decimals());
     }
+
 }

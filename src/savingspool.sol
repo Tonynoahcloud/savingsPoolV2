@@ -30,7 +30,7 @@ contract savingsPool {
     address public admin;
 
     event planCreated(address indexed user, uint256 indexed planId, uint256 goalAmount);
-    event DepositMade(address indexed user, uint256 _planId, uint256 _amount);
+    event DepositMade(address indexed user, uint256 indexed _planId, uint256 _amount);
     event withdrawn(address indexed user, uint256 indexed _planId, uint256 amountToTransfer, bool isEarly);
 
     function createPlan(uint256 _goalAmount) external {
